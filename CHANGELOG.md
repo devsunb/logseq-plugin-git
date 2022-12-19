@@ -1,3 +1,23 @@
+# 1.0.0 (2022-12-19)
+
+
+### Bug Fixes
+
+* 🐛 Adapt logseq 0.6.7 ([02ffdf7](https://github.com/devsunb/logseq-plugin-git/commit/02ffdf70d493f0adc70d95d4847a7bb6ed6751b7))
+* button color ([d3a5bd1](https://github.com/devsunb/logseq-plugin-git/commit/d3a5bd169ee74634983c04f160677a9f34f8971e))
+* button style ([d32ef80](https://github.com/devsunb/logseq-plugin-git/commit/d32ef80c2105b3d7fb14da9b813c2eb29b7d3045))
+* default value error[skip ci] ([a5cfc2b](https://github.com/devsunb/logseq-plugin-git/commit/a5cfc2b9184119f820946fcb0d33f5e5dc098e5d))
+* The id does not match expectations ([dffcaa3](https://github.com/devsunb/logseq-plugin-git/commit/dffcaa3b71086bad022350494c841bed7576d9c3))
+
+
+### Features
+
+* ✨ add icon ([0f52416](https://github.com/devsunb/logseq-plugin-git/commit/0f52416ef8594525fb2fb527bc05c98fa327e308))
+* ✨ add pull and checkout buttons ([f950626](https://github.com/devsunb/logseq-plugin-git/commit/f950626e2a3776c805a96267bbd37ba7a7eae9da))
+* ✨ Support for turning off auto-check sync ([a2ac2bd](https://github.com/devsunb/logseq-plugin-git/commit/a2ac2bd44cd9685c15827bdb82bdec6c18139823))
+* add default value: pull rebase ([90862ba](https://github.com/devsunb/logseq-plugin-git/commit/90862ba1d2d0d258c6d7b7a58f552fb0187f2df9))
+* supports disable checkWhenDBChanged ([85428aa](https://github.com/devsunb/logseq-plugin-git/commit/85428aa217361a797f64c5eadd8a008e39cb49b2))
+
 ## [1.4.2](https://github.com/haydenull/logseq-plugin-git/compare/v1.4.1...v1.4.2) (2022-11-06)
 
 ### Bug Fixes
