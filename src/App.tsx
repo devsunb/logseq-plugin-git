@@ -1,4 +1,4 @@
-import './App.css'
+import './App.css';
 
 const App: React.FC<{ env: string }> = ({ env }) => {
   return (
@@ -9,7 +9,7 @@ const App: React.FC<{ env: string }> = ({ env }) => {
         <h2 className="text-2xl mt-6">Current Env: {env}</h2>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
