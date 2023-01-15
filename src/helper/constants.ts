@@ -1,4 +1,4 @@
-import { SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin.user"
+import { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin.user';
 
 export const COMMON_STYLE = `
 #injected-ui-item-git-logseq-git {
@@ -36,25 +36,25 @@ export const COMMON_STYLE = `
   top: -36px;
   left: -70vw;
 }
-`
+`;
 
 export const SHOW_POPUP_STYLE = `
 #injected-ui-item-git-logseq-git #logseq-git--git #plugin-git-content-wrapper {
   display: block;
 }
-`
+`;
 export const HIDE_POPUP_STYLE = `
 #injected-ui-item-git-logseq-git #logseq-git--git #plugin-git-content-wrapper {
   display: none;
 }
-`
+`;
 
 export const INACTIVE_STYLE = `
 ${COMMON_STYLE}
 #injected-ui-item-git-logseq-git::after {
   display: none;
 }
-`
+`;
 export const ACTIVE_STYLE = `
 ${COMMON_STYLE}
 #injected-ui-item-git-logseq-git::after {
@@ -68,7 +68,7 @@ ${COMMON_STYLE}
   right: 8px;
   top: 6px;
 }
-`
+`;
 
 export const LOADING_STYLE = `
 ${COMMON_STYLE}
@@ -95,48 +95,36 @@ ${COMMON_STYLE}
     opacity: 0;
   }
 }
-`
+`;
 
 export const BUTTONS = [
-  { key: 'status', title: 'Check Status', event: 'check' },
-  { key: 'log', title: 'Show Log', event: 'log' },
+  { key: 'check', title: 'Check', event: 'check' },
   { key: 'pull', title: 'Pull', event: 'pull' },
-  { key: 'pullRebase', title: 'Pull Rebase', event: 'pullRebase' },
-  { key: 'checkout', title: 'Checkout', event: 'checkout' },
-  { key: 'commit', title: 'Commit', event: 'commit' },
-  { key: 'push', title: 'Push', event: 'push' },
-  { key: 'commitAndPush', title: 'Commit & Push', event: 'commitAndPush' },
-]
+  { key: 'commitAndPush', title: 'Push', event: 'commitAndPush' }
+];
 
 export const SETTINGS_SCHEMA: SettingSchemaDesc[] = [
   {
     key: 'buttons',
     title: 'Buttons',
     type: 'enum',
-    default: ['Check Status', 'Show Log', 'Pull Rebase', 'Commit & Push'],
+    default: ['Check', 'Pull', 'Push'],
     description: 'Select buttons to show',
     enumPicker: 'checkbox',
-    enumChoices: BUTTONS.map(({ title }) => title),
+    enumChoices: BUTTONS.map(({ title }) => title)
   },
   {
-    key: 'checkWhenDBChanged',
-    title: 'Check Status when DB Changed',
-    type: 'boolean',
-    default: true,
-    description: 'Check status when DB changed, restart logseq to take effect',
-  },
-  {
-    key: 'autoCheckSynced',
-    title: 'Auto Check If Synced',
+    key: 'autoPull',
+    title: 'Auto Pull',
     type: 'boolean',
     default: false,
-    description: 'Automatically check if the local version is the same as the remote',
+    description: 'Auto pull when logseq activated'
   },
   {
     key: 'autoPush',
     title: 'Auto Push',
     type: 'boolean',
     default: false,
-    description: 'Auto push when logseq hide',
-  },
-]
+    description: 'Auto push when logseq hide'
+  }
+];

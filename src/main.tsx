@@ -1,147 +1,118 @@
-import '@logseq/libs'
-import React from 'react'
-import ReactDOM from 'react-dom'
-import App from './App'
-import { BUTTONS, LOADING_STYLE, SETTINGS_SCHEMA } from './helper/constants'
-import { checkout, commit, log, pull, pullRebase, push, status } from './helper/git'
-import { checkStatus, debounce, hidePopup, setPluginStyle, showPopup, checkIsSynced, checkStatusWithDebounce } from './helper/util'
-import './index.css'
+// noinspection JSIgnoredPromiseFromCall
 
-const isDevelopment = import.meta.env.DEV
+import '@logseq/libs';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import { BUTTONS, LOADING_STYLE, SETTINGS_SCHEMA } from './helper/constants';
+import { commit, isChanged, isRepoUpToDate, pull, push } from './helper/git';
+import { checkStatus, debounce, hidePopup, setPluginStyle, showPopup } from './helper/util';
+import './index.css';
+
+const isDevelopment = import.meta.env.DEV;
 
 if (isDevelopment) {
-  renderApp('browser')
+  renderApp('browser');
 } else {
-  console.log('=== logseq-plugin-git loaded ===')
+  console.log('=== logseq-plugin-git loaded ===');
   logseq.ready(() => {
+    logseq.useSettingsSchema(SETTINGS_SCHEMA);
 
-    const operations = {
-      check: debounce(async function() {
-        const status = await checkStatus()
-        if (status?.stdout === '') {
-          logseq.UI.showMsg('No changes detected.')
-        } else {
-          logseq.UI.showMsg('Changes detected:\n' + status.stdout, 'success', { timeout: 0 })
+    let operating = false;
+    const pullOperation = async () => {
+      if (operating) return;
+      setPluginStyle(LOADING_STYLE);
+      operating = true;
+      if (!(await isRepoUpToDate())) await pull();
+      await checkStatus();
+      operating = false;
+    };
+    const pushOperation = async () => {
+      if (operating || !(await isChanged())) return;
+      setPluginStyle(LOADING_STYLE);
+      operating = true;
+      if (!(await isRepoUpToDate())) {
+        const res = await pull();
+        if (res.exitCode !== 0) {
+          await checkStatus();
+          operating = false;
+          return;
         }
-        hidePopup()
+      }
+      const res = await commit();
+      if (res.exitCode !== 0) {
+        await checkStatus();
+        operating = false;
+        return;
+      }
+      await push();
+      await checkStatus();
+      operating = false;
+    };
+    const operations = {
+      check: debounce(async () => {
+        if (!operating) await checkStatus();
       }),
-      pull: debounce(async function() {
-        console.log('[faiz:] === pull click')
-        setPluginStyle(LOADING_STYLE)
-        hidePopup()
-        await pull(false)
-        checkStatus()
+      pull: debounce(async () => {
+        hidePopup();
+        await pullOperation();
       }),
-      pullRebase: debounce(async function() {
-        console.log('[faiz:] === pullRebase click')
-        setPluginStyle(LOADING_STYLE)
-        hidePopup()
-        await pullRebase()
-        checkStatus()
+      commitAndPush: debounce(async () => {
+        hidePopup();
+        await pushOperation();
       }),
-      checkout: debounce(async function() {
-        console.log('[faiz:] === checkout click')
-        hidePopup()
-        checkout()
+      showPopup: debounce(async () => {
+        showPopup();
       }),
-      commit: debounce(async function () {
-        hidePopup()
-        commit(true, `[logseq-plugin-git:commit] ${new Date().toISOString()}`)
-      }),
-      push: debounce(async function () {
-        setPluginStyle(LOADING_STYLE)
-        hidePopup()
-        await push()
-        checkStatus()
-      }),
-      commitAndPush: debounce(async function () {
-        setPluginStyle(LOADING_STYLE)
-        hidePopup()
-        const res = await commit(true, `[logseq-plugin-git:commit] ${new Date().toISOString()}`)
-        if (res.exitCode === 0) await push(true)
-        checkStatus()
-      }),
-      log: debounce(async function() {
-        console.log('[faiz:] === log click')
-        const res = await log(false)
-        logseq.UI.showMsg(res?.stdout, 'success', { timeout: 0 })
-        hidePopup()
-      }),
-      showPopup: debounce(async function() {
-        console.log('[faiz:] === showPopup click')
-        showPopup()
-      }),
-      hidePopup: debounce(function() {
-        console.log('[faiz:] === hidePopup click')
-        hidePopup()
-      }),
-    }
-
-    logseq.provideModel(operations)
+      hidePopup: debounce(() => {
+        hidePopup();
+      })
+    };
+    logseq.provideModel(operations);
 
     logseq.App.registerUIItem('toolbar', {
       key: 'git',
-      template: '<a data-on-click="showPopup" class="button"><i class="ti ti-brand-git"></i></a><div id="plugin-git-content-wrapper"></div>',
-    })
-    logseq.useSettingsSchema(SETTINGS_SCHEMA)
+      template:
+        '<a data-on-click="showPopup" class="button"><i class="ti ti-brand-git"></i></a><div id="plugin-git-content-wrapper"></div>'
+    });
     setTimeout(() => {
-      const buttons = (logseq.settings?.buttons as string[])?.map(title => BUTTONS.find(b => b.title === title))
-      if (buttons?.length) {
+      const buttons = (logseq.settings?.buttons as string[])?.map((title) => BUTTONS.find((b) => b.title === title));
+      if (buttons?.length)
         logseq.provideUI({
           key: 'git-popup',
           path: '#plugin-git-content-wrapper',
           template: `
-            <div class="plugin-git-mask" data-on-click="hidePopup"></div>
-            <div class="plugin-git-popup flex flex-col">
-              ${buttons.map(button => '<button data-on-click="' + button?.event + '" class="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm p-1" style="margin: 4px 0; color: #fff;">' + button?.title + '</button>').join('\n')}
+            <div class='plugin-git-mask' data-on-click='hidePopup'></div>
+            <div class='plugin-git-popup flex flex-col'>
+              ${buttons.map((button) => '<button data-on-click="' + button?.event + '" class="ui__button bg-indigo-600 hover:bg-indigo-700 focus:border-indigo-700 active:bg-indigo-700 text-center text-sm p-1" style="margin: 4px 0; color: #fff;">' + button?.title + '</button>').join('\n')}
             </div>
-          `,
-        })
-      }
-    }, 1000)
+          `
+        });
+    }, 1000);
+    hidePopup();
 
-    logseq.App.onRouteChanged(async () => {
-      checkStatusWithDebounce()
-    })
-    if (logseq.settings?.checkWhenDBChanged) {
-      logseq.DB.onChanged(({ blocks, txData, txMeta }) => {
-        checkStatusWithDebounce()
-      })
-    }
-
-    if (logseq.settings?.autoCheckSynced) checkIsSynced()
-    checkStatusWithDebounce()
+    logseq.App.onRouteChanged(operations.check);
+    logseq.DB.onChanged(operations.check);
+    if (logseq.settings?.autoPull) pullOperation();
+    else operations.check();
 
     if (top) {
       top.document?.addEventListener('visibilitychange', async () => {
-        const visibilityState = top?.document?.visibilityState
-
-        if (visibilityState === 'visible') {
-          if (logseq.settings?.autoCheckSynced) checkIsSynced()
-        } else if (visibilityState === 'hidden') {
-          // logseq.UI.showMsg(`Page is hidden: ${new Date()}`, 'success', { timeout: 0 })
-          // noChange void
-          // changed commit push
-          if (logseq.settings?.autoPush) {
-            const status = await checkStatus()
-            const changed = status?.stdout !== ''
-            if (changed) operations.commitAndPush()
-          }
-        }
-      })
+        const v = top?.document?.visibilityState;
+        if (v === 'visible' && logseq.settings?.autoPull) await pullOperation();
+        else if (v === 'hidden' && logseq.settings?.autoPush) await pushOperation();
+      });
     }
 
-    logseq.App.registerCommandPalette({
-      key: 'logseq-plugin-git:commit&push',
-      label: 'Commit & Push',
-      keybinding: {
-        binding: 'mod+s',
-        mode: 'global',
+    logseq.App.registerCommandPalette(
+      {
+        key: 'logseq-plugin-git:push',
+        label: 'Push',
+        keybinding: { binding: 'mod+s', mode: 'global' }
       },
-    }, () => operations.commitAndPush())
-
-
-  })
+      pushOperation
+    );
+  });
 }
 
 function renderApp(env: string) {
@@ -150,5 +121,5 @@ function renderApp(env: string) {
       <App env={env} />
     </React.StrictMode>,
     document.getElementById('root')
-  )
+  );
 }

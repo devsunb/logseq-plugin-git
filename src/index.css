@@ -2,9 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  background-color: transparent;
+html,
+body {
+    background-color: transparent;
 }
+
 #root {
-  @apply w-screen h-screen;
+    @apply w-screen h-screen;
 }
